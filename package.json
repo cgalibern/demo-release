@@ -1,6 +1,6 @@
 {
   "name": "demo-release",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "demo...",
   "main": "index.js",
   "scripts": {},
@@ -9,4 +9,3 @@
     "url": "git+https://github.com/cgalibern/demo-release.git"
   }
 }
-

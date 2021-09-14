@@ -20,7 +20,7 @@ jobs:
     needs: [prepare]
     runs-on: ubuntu-latest
     steps:
-      run: echo "build done" > result
+      - run: echo "build done" > result
 
   release:
     needs: [prepare, build]

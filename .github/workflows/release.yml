@@ -6,24 +6,42 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  prepare:
-    name: prepare
+  build:
+
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.0
-      - name: Install dependencies
-        run: |
-          npm install
+        with:
+          fetch-depth: 0
 
-  build:
-    needs: [prepare]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "build done" > result
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: git describe --always --tags
+      - run: npm install
+      - run: npm list -g --depth=0
+      - run: cd src && tar -czf ../bundle.debug *
+      - run: cd .github && tar -czf ../bundle *
+      - name: Archive bundles
+        uses: actions/upload-artifact@v2
+        with:
+          name: bundles
+          retention-days: 2
+          path: |
+            bundle
+            bundle.debug
+      - run: find . -ls
 
   release:
-    needs: [prepare, build]
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -38,6 +56,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: actions/download-artifact@v2
+        with:
+          name: bundles
+          path: .
+
+      - run: find . -ls
+
       - name: Release
         uses: softprops/action-gh-release@v1
         id: Release
@@ -46,4 +71,5 @@ jobs:
           files: |
             README.md
             package.json
-            result
+            bundle
+            bundle.debug

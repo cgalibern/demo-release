@@ -16,8 +16,14 @@ jobs:
         run: |
           npm install
 
-  release:
+  build:
     needs: [prepare]
+    runs-on: ubuntu-latest
+    steps:
+      run: echo "build done" > result
+
+  release:
+    needs: [prepare, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -40,3 +46,4 @@ jobs:
           files: |
             README.md
             package.json
+            result
